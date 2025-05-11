@@ -11,8 +11,13 @@ import SwiftData
 struct ContentView: View {
     
     var body: some View {
-        Text("Welcome To InkSketch")
+        VStack{
+            ImageGeneratorView()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .environment(\.colorScheme, .dark)
     }
+       
 
 }
 
