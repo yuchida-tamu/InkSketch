@@ -10,10 +10,13 @@ import SwiftUI
 struct PromptKeywordInputField: View {
     @State var keyword = ""
     @Binding var prompts: [PromptKeyword]
+    @FocusState var focusState
+   
     var body: some View {
         HStack {
             TextField("Enter your inspiration keyword", text: $keyword)
                 .onSubmit(addKeywordToStack)
+                .focused($focusState, equals: true)
                 .textInputAutocapitalization(.never)
 
             Button(
@@ -25,6 +28,10 @@ struct PromptKeywordInputField: View {
                 })
         }
         .textFieldStyle(.roundedBorder)
+        .onAppear{
+            focusState = true
+        }
+
     }
     
     private func addKeywordToStack() {
