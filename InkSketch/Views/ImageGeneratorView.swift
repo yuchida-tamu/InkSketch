@@ -73,8 +73,9 @@ struct ImageGeneratorView: View {
     }
 
     init() {
-        let client = OpenAIClient(keyManager: APIKeyManager.shared)
-        client.setModel(.dalle2)
+        let model = OpenAIModel()
+        model.model = "dall-e-2"
+        let client = OpenAIClient(keyManager: APIKeyManager.shared, model: model)
         generator = ImageGenerator(client: client)
     }
 }

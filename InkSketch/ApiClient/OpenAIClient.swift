@@ -7,20 +7,37 @@
 
 import Foundation
 
-enum OpenAIImageModel: String {
-    case gptImage = "gpt-image-1"
-    case dalle2 = "dall-e-2"
-    case dalle3 = "dall-e-3"
+
+
+class OpenAIModel: LLMModel {
+    private enum ImageModel: String {
+        case gptImage = "gpt-image-1"
+        case dalle2 = "dall-e-2"
+        case dalle3 = "dall-e-3"
+    }
+    private var _model = ImageModel.gptImage
+    
+    var model: String {
+        get {
+            return _model.rawValue
+        }
+        
+        set {
+            if let m = ImageModel(rawValue: newValue) { _model = m }
+            else { _model = .gptImage }
+        }
+    }
 }
 
 class OpenAIClient: LLMClient {
-    private var model: OpenAIImageModel = .gptImage
+    private var model: LLMModel
     private var keyManager: APIKeyManager
     private var url = URL(
         string: "https://api.openai.com/v1/images/generations")
 
-    init(keyManager: APIKeyManager) {
+    init(keyManager: APIKeyManager, model: LLMModel) {
         self.keyManager = keyManager
+        self.model = model
     }
 
     public func makeRequest(prompt: String) async -> (Data, HTTPURLResponse)? {
@@ -38,10 +55,6 @@ class OpenAIClient: LLMClient {
         } catch {
             return nil
         }
-    }
-
-    public func setModel(_ model: OpenAIImageModel) {
-        self.model = model
     }
 
     private func getRequest(prompt: String) -> URLRequest? {
@@ -63,7 +76,7 @@ class OpenAIClient: LLMClient {
     private func getRequestBody(prompt: String) -> Data? {
         do {
             let requestBody = RequestBody(
-                model: self.model.rawValue, prompt: prompt)
+                model: self.model.model, prompt: prompt)
             return try JSONEncoder().encode(requestBody)
         } catch {
             return nil
