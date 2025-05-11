@@ -13,7 +13,8 @@ struct PromptKeyword: Identifiable {
 }
 
 struct ImageGeneratorView: View {
-    private var maxPromptCount = 3
+    private var maxPromptCount = 5
+    private var minPromptCount = 1
     private var generator: ImageGenerator
     @State private var keyword = ""
     @State private var prompts: [PromptKeyword] = []
@@ -22,6 +23,10 @@ struct ImageGeneratorView: View {
     @State private var imageUrl: String?
     @State private var isFetching = false
 
+    var isSubmitButtonDisabled: Bool {
+        return isFetching || prompts.count >= minPromptCount
+    }
+    
     // MARK: BODY
     var body: some View {
         // DISPLAY
@@ -29,7 +34,7 @@ struct ImageGeneratorView: View {
             VStack {
                 Text("Generate Your Image")
                     .font(.title)
-
+                Spacer()
                 if imageUrl != nil {
                     AsyncImage(url: URL(string: imageUrl!)) { data in
                         data.image?.resizable()
@@ -58,7 +63,7 @@ struct ImageGeneratorView: View {
                 } label: {
                     Text("Confirm Prompts")
                 }
-                .disabled(isFetching)
+                .disabled(isSubmitButtonDisabled)
                 .buttonStyle(.bordered)
             }  // - VStack
             .padding()
