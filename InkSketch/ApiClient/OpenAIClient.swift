@@ -18,13 +18,9 @@ class OpenAIClient: LLMClient {
     private var keyManager: APIKeyManager
     private var url = URL(
         string: "https://api.openai.com/v1/images/generations")
-    
-    init(keyManager: APIKeyManager){
-        self.keyManager = keyManager
-    }
 
-    public func setModel(_ model: OpenAIImageModel) {
-        self.model = model
+    init(keyManager: APIKeyManager) {
+        self.keyManager = keyManager
     }
 
     public func makeRequest(prompt: String) async -> (Data, HTTPURLResponse)? {
@@ -44,9 +40,15 @@ class OpenAIClient: LLMClient {
         }
     }
 
+    public func setModel(_ model: OpenAIImageModel) {
+        self.model = model
+    }
+
     private func getRequest(prompt: String) -> URLRequest? {
-        guard let url = self.url, let apiKey = keyManager.apiKey(for: "OPEN_AI_API_KEY") else { return nil }
-        
+        guard let url = self.url,
+            let apiKey = keyManager.apiKey(for: "OPEN_AI_API_KEY")
+        else { return nil }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue(
@@ -67,11 +69,10 @@ class OpenAIClient: LLMClient {
             return nil
         }
     }
-}
 
-extension OpenAIClient {
     struct RequestBody: Codable {
         var model: String
         var prompt: String
     }
+
 }
