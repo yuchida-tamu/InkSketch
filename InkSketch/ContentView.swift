@@ -16,6 +16,7 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .environment(\.colorScheme, .dark)
+        
     }
        
 
@@ -23,4 +24,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(\.colorScheme, .dark)
 }

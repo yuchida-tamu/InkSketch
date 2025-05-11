@@ -27,6 +27,7 @@ struct InkSketchApp: App {
         WindowGroup {
             ContentView()
         }
+        .environment(\.colorScheme, .dark)
         .modelContainer(sharedModelContainer)
     }
 }

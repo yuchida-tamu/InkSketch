@@ -70,6 +70,8 @@ struct ImageGeneratorView: View {
                 ProgressView()
             }
         }  // - ZStack
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background()
     }
 
     init() {
@@ -82,4 +84,5 @@ struct ImageGeneratorView: View {
 
 #Preview {
     ImageGeneratorView()
+        .environment(\.colorScheme, .dark)
 }
