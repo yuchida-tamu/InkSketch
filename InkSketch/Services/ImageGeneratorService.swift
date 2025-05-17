@@ -26,8 +26,9 @@ class ImageGeneratorService: ImageGeneratable {
 
     public func generate(prompts: [PromptKeyword]) async -> String? {
         let keywordString = prompts.map({ $0.value }).joined(separator: ", ")
-        let prompt =
-            "Generate an illustration based on the following keywords: \(keywordString)"
+
+        let prompt = "A detailed black and white tattoo design of \(keywordString), with clean, crisp line work and high contrast. The style is minimal. The design should be clear and suitable as a tattoo stencil. Include elements like \(keywordString) if applicable. The composition should be balanced, focused on the main subject, and drawn with precise outlines. No background shading. No color."
+
         let result = await client.makeRequest(prompt: prompt)
 
         guard result.error == false, let response = result.data else {

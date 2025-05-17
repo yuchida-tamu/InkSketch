@@ -39,7 +39,6 @@ struct ImageGeneratorView: View {
                 if let image = viewModel.uiImage {
                     Image(uiImage: image)
                         .resizable()
-                        .frame(width: .infinity, height: 256)
                 }
 
                 Spacer()
