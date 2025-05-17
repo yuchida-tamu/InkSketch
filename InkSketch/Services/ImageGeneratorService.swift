@@ -12,7 +12,7 @@ enum LLMType {
 }
 
 protocol ImageGeneratable {
-    func generate(prompts: [PromptKeyword]) async -> String?
+    func generate(motif: String, keywords: String) async -> String?
 }
 
 class ImageGeneratorService: ImageGeneratable {
@@ -24,10 +24,8 @@ class ImageGeneratorService: ImageGeneratable {
         self.llmType = type
     }
 
-    public func generate(prompts: [PromptKeyword]) async -> String? {
-        let keywordString = prompts.map({ $0.value }).joined(separator: ", ")
-
-        let prompt = "A detailed black and white tattoo design of \(keywordString), with clean, crisp line work and high contrast. The style is minimal. The design should be clear and suitable as a tattoo stencil. Include elements like \(keywordString) if applicable. The composition should be balanced, focused on the main subject, and drawn with precise outlines. No background shading. No color."
+    public func generate(motif: String, keywords: String) async -> String? {
+        let prompt = "A detailed black and white tattoo design of \(motif), with clean, crisp line work and high contrast. The style is minimal. The design should be clear and suitable as a tattoo stencil. Include elements like \(keywords) if applicable. The composition should be balanced, focused on the main subject, and drawn with precise outlines. No background shading. No color."
 
         let result = await client.makeRequest(prompt: prompt)
 

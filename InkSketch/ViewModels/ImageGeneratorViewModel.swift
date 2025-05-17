@@ -19,12 +19,12 @@ import SwiftUI
         self.service = service
     }
 
-    func generateImage(prompts: [PromptKeyword]) {
+    func generateImage(motif: String, keywords: String) {
         currentTask?.cancel()
         isProcessing = true
         currentTask = Task {
             defer { isProcessing = false }
-            guard let encodedImage = await service.generate(prompts: prompts)
+            guard let encodedImage = await service.generate(motif: motif, keywords: keywords)
             else {
                 print("Failed to generate image")
                 return

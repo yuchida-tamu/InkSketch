@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct ImagePromptFormView: View {
-    @State var selectedKeywordId: UUID? = nil
-    @Binding var prompts: [PromptKeyword]
-    @State var motifInput = ""
-    @State var showMotifInputField = true
-
+    @State private var prompts: [PromptKeyword] = []
+    @State private var selectedKeywordId: UUID? = nil
+    @State private var motifInput = ""
+    @State private var showMotifInputField = true
+    
+    private var submit: (FormValue) -> Void
+    
     var body: some View {
         VStack(spacing: 24) {
             Text("Generate Your Image")
@@ -49,19 +51,31 @@ struct ImagePromptFormView: View {
             }
 
             Spacer()
+            Button {
+                submit(FormValue(motif: motifInput, keywords: prompts.map({$0.value}).joined(separator: ", ")))
+            } label: {
+                Text("GENERATE")
+                    .bold()
+            }
+            .buttonStyle(.bordered)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(16)
         .background()
     }
+    
+    init( submit: @escaping (FormValue) -> Void) {
+        self.submit = submit
+    }
+    
+    struct FormValue {
+        var motif: String
+        var keywords: String
+    }
 }
 
 #Preview {
-    struct PreviewContent: View {
-        @State var prompts: [PromptKeyword] = []
-        var body: some View {
-            ImagePromptFormView(prompts: $prompts)
-        }
+    ImagePromptFormView { data in
+        print("motif: \(data.motif), keywords: \(data.keywords)")
     }
-    return PreviewContent()
 }

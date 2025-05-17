@@ -31,10 +31,6 @@ struct ImageGeneratorView: View {
         // DISPLAY
         ZStack {
             VStack {
-                Text("Generate Your Image")
-                    .font(.title)
-                Spacer()
-                
                 // Image Display
                 if let image = viewModel.uiImage {
                     Image(uiImage: image)
@@ -42,17 +38,8 @@ struct ImageGeneratorView: View {
                 }
 
                 Spacer()
-                // Keyword List
-                PrompKeywordList(
-                    selectedId: $selectedKeywordId, prompts: $prompts)
+ 
                
-                Button {
-                    viewModel.generateImage(prompts: prompts)
-                } label: {
-                    Text("Confirm Prompts")
-                }
-                .disabled(isSubmitButtonDisabled)
-                .buttonStyle(.bordered)
             }  // - VStack
             .padding()
             .onDisappear {
@@ -65,6 +52,13 @@ struct ImageGeneratorView: View {
         }  // - ZStack
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background()
+        .sheet(isPresented: .constant(true)){
+            ImagePromptFormView {data in
+                viewModel.generateImage(motif: data.motif, keywords: data.keywords)
+            }
+            .interactiveDismissDisabled()
+            .presentationDetents([.fraction(0.5), .fraction(0.1)])
+        }
     }
 
     init() {

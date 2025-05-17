@@ -16,7 +16,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "27"
             endingLineNumber = "27"
-            landmarkName = "generateImage(prompts:)"
+            landmarkName = "generateImage(motif:keywords:)"
             landmarkType = "7">
             <Locations>
                <Location
