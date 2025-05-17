@@ -15,18 +15,17 @@ struct PromptKeyword: Identifiable {
 struct ImageGeneratorView: View {
     private var maxPromptCount = 5
     private var minPromptCount = 1
-    private var generator: ImageGeneratorService
+
     @State private var keyword = ""
     @State private var prompts: [PromptKeyword] = []
     @State private var selectedKeywordId: UUID? = nil
-    @State private var currentTask: Task<(), Never>?
-    @State private var imageUrl: String?
-    @State private var isFetching = false
+
+    private var viewModel: ImageGeneratorViewModel
 
     var isSubmitButtonDisabled: Bool {
-        return isFetching || prompts.count >= minPromptCount
+        return viewModel.isProcessing || prompts.count < minPromptCount
     }
-    
+
     // MARK: BODY
     var body: some View {
         // DISPLAY
@@ -35,11 +34,12 @@ struct ImageGeneratorView: View {
                 Text("Generate Your Image")
                     .font(.title)
                 Spacer()
-                if imageUrl != nil {
-                    AsyncImage(url: URL(string: imageUrl!)) { data in
-                        data.image?.resizable()
-                    }
-                    .frame(width: .infinity, height: 256)
+                
+                // Image Display
+                if let image = viewModel.uiImage {
+                    Image(uiImage: image)
+                        .resizable()
+                        .frame(width: .infinity, height: 256)
                 }
 
                 Spacer()
@@ -49,17 +49,7 @@ struct ImageGeneratorView: View {
                 // CONTROL
                 PromptKeywordInputField(prompts: $prompts)
                 Button {
-                    currentTask?.cancel()
-                    isFetching = true
-                    currentTask = Task {
-                        defer { isFetching = false }
-                        guard prompts.count > 0 else { return }
-                        guard
-                            let url = await generator.generate(
-                                prompts: prompts)
-                        else { return }
-                        imageUrl = url
-                    }
+                    viewModel.generateImage(prompts: prompts)
                 } label: {
                     Text("Confirm Prompts")
                 }
@@ -68,10 +58,10 @@ struct ImageGeneratorView: View {
             }  // - VStack
             .padding()
             .onDisappear {
-                currentTask?.cancel()
+                viewModel.initTask()
             }
 
-            if isFetching {
+            if viewModel.isProcessing {
                 ProgressView()
             }
         }  // - ZStack
@@ -82,8 +72,11 @@ struct ImageGeneratorView: View {
     init() {
         let model = OpenAIModel()
         model.model = "dall-e-2"
-        let client = OpenAIClient(keyManager: APIKeyManager.shared, model: model)
-        generator = ImageGeneratorService(client: client)
+        let client = OpenAIClient(
+            keyManager: APIKeyManager.shared, model: model)
+        let service = ImageGeneratorService(client: client)
+
+        viewModel = ImageGeneratorViewModel(service: service)
     }
 }
 
