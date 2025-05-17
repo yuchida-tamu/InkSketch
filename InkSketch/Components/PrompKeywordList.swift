@@ -12,33 +12,30 @@ struct PrompKeywordList: View {
     @Binding var prompts: [PromptKeyword]
 
     var body: some View {
-        if prompts.count == 0 {
-            Text("Enter keywords!")
-                .font(.callout)
-        } else {
-            HStack(alignment: .center, spacing: 4) {
-                ForEach(prompts) { k in
-                    HStack {
-                        Text(k.value)
-                        if selectedId == k.id {
-                            Image(systemName: "xmark")
-                        }
-                    }
-                    .padding(
-                        EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
-                    )
-                    .overlay {
-                        Capsule()
-                            .stroke(.white)
-                    }
-                    .onTapGesture {
-                        handleTapPromptKeyword(prompt: k)
+
+        HStack(alignment: .center, spacing: 4) {
+            ForEach(prompts) { k in
+                HStack {
+                    Text(k.value)
+                    if selectedId == k.id {
+                        Image(systemName: "xmark")
                     }
                 }
-                Spacer()
+                .padding(
+                    EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
+                )
+                .overlay {
+                    Capsule()
+                        .stroke(.white)
+                }
+                .onTapGesture {
+                    handleTapPromptKeyword(prompt: k)
+                }
             }
-            .frame(height: 32)
+            Spacer()
         }
+        .frame(height: 32)
+
     }
     private func handleTapPromptKeyword(prompt: PromptKeyword) {
         if selectedId == prompt.id {

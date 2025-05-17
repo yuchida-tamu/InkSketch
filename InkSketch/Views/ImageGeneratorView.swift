@@ -45,8 +45,7 @@ struct ImageGeneratorView: View {
                 // Keyword List
                 PrompKeywordList(
                     selectedId: $selectedKeywordId, prompts: $prompts)
-                // CONTROL
-                PromptKeywordInputField(prompts: $prompts)
+               
                 Button {
                     viewModel.generateImage(prompts: prompts)
                 } label: {
