@@ -13,7 +13,7 @@ enum FormSize {
 }
 
 struct ImagePromptFormView: View {
-    private var size: FormSize
+    @Binding private var size: PresentationDetent
     
     @State private var prompts: [PromptKeyword] = []
     @State private var selectedKeywordId: UUID? = nil
@@ -29,7 +29,7 @@ struct ImagePromptFormView: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            if size == .full {
+            if size == .medium {
                 if showMotifInputField {
                     VStack {
                         Text("Enter a motif for the image")
@@ -78,15 +78,26 @@ struct ImagePromptFormView: View {
                 }
             }
 
-          
-            Button {
-                submit(FormValue(motif: motifInput, keywords: prompts.map({$0.value}).joined(separator: ", ")))
-            } label: {
-                Text("GENERATE")
-                    .bold()
+            if motifInput.count == 0 && size == .fraction(0.2) {
+                Button {
+                    size = .medium
+                } label: {
+                    Text("OPEN")
+                        .bold()
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
-            .disabled(disableSubmit)
+            else {
+                Button {
+                    submit(FormValue(motif: motifInput, keywords: prompts.map({$0.value}).joined(separator: ", ")))
+                    size = .fraction(0.2)
+                } label: {
+                    Text("GENERATE")
+                        .bold()
+                }
+                .buttonStyle(.bordered)
+                .disabled(disableSubmit)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 16)
@@ -94,8 +105,8 @@ struct ImagePromptFormView: View {
         .background()
     }
     
-    init(fetching: Bool = false, size: FormSize = .full, submit: @escaping (FormValue) -> Void) {
-        self.size = size
+    init(fetching: Bool = false, size: Binding<PresentationDetent>, submit: @escaping (FormValue) -> Void) {
+        self._size = size
         self.submit = submit
         self.fetching = fetching
     }
@@ -107,7 +118,13 @@ struct ImagePromptFormView: View {
 }
 
 #Preview {
-    ImagePromptFormView { data in
-        print("motif: \(data.motif), keywords: \(data.keywords)")
+    struct PreviewContent: View {
+        @State var size: PresentationDetent = .medium
+        var body: some View {
+            ImagePromptFormView (size: $size){ data in
+                print("motif: \(data.motif), keywords: \(data.keywords)")
+            }
+        }
     }
+    return PreviewContent()
 }

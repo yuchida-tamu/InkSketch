@@ -19,16 +19,12 @@ struct ImageGeneratorView: View {
     @State private var keyword = ""
     @State private var prompts: [PromptKeyword] = []
     @State private var selectedKeywordId: UUID? = nil
-    @State private var selectedDent: PresentationDetent = .fraction(0.1)
+    @State private var selectedDent: PresentationDetent = .medium
 
     private var viewModel: ImageGeneratorViewModel
 
     var isSubmitButtonDisabled: Bool {
         return viewModel.isProcessing || prompts.count < minPromptCount
-    }
-
-    var formSize: FormSize {
-        selectedDent == .medium ? .full : .minimum
     }
 
     // MARK: BODY
@@ -58,7 +54,7 @@ struct ImageGeneratorView: View {
         .sheet(isPresented: .constant(true)) {
             ImagePromptFormView(
                 fetching: viewModel.isProcessing,
-                size: formSize
+                size: $selectedDent
             ) { data in
                 viewModel.generateImage(
                     motif: data.motif, keywords: data.keywords)
