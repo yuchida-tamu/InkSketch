@@ -15,7 +15,7 @@ struct PromptKeyword: Identifiable {
 struct ImageGeneratorView: View {
     private var maxPromptCount = 5
     private var minPromptCount = 1
-    private var generator: ImageGenerator
+    private var generator: ImageGeneratorService
     @State private var keyword = ""
     @State private var prompts: [PromptKeyword] = []
     @State private var selectedKeywordId: UUID? = nil
@@ -55,7 +55,7 @@ struct ImageGeneratorView: View {
                         defer { isFetching = false }
                         guard prompts.count > 0 else { return }
                         guard
-                            let url = await generator.generateUrl(
+                            let url = await generator.generate(
                                 prompts: prompts)
                         else { return }
                         imageUrl = url
@@ -83,7 +83,7 @@ struct ImageGeneratorView: View {
         let model = OpenAIModel()
         model.model = "dall-e-2"
         let client = OpenAIClient(keyManager: APIKeyManager.shared, model: model)
-        generator = ImageGenerator(client: client)
+        generator = ImageGeneratorService(client: client)
     }
 }
 

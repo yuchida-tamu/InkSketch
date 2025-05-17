@@ -8,9 +8,19 @@
 import Foundation
 
 protocol LLMClient {
-    func makeRequest(prompt: String) async -> (Data, HTTPURLResponse)?
+    func makeRequest(prompt: String) async -> LLMResult
 }
 
 protocol LLMModel {
     var model: String { get set }
+}
+
+struct LLMResult {
+    var error: Bool = false
+    var data: LLMImageData?
+}
+
+struct LLMImageData: Codable {
+    var created: Int
+    var data: [[String: String]]
 }
