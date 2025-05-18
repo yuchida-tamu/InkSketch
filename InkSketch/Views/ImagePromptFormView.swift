@@ -30,9 +30,20 @@ struct ImagePromptFormView: View {
     var body: some View {
         VStack(spacing: 8) {
             if size == .medium {
+                if motifInput.count > 0 {
+                    HStack {
+                        Text(motifInput)
+                            .font(.headline)
+                        Button {
+                            showMotifInputField = true
+                        } label: {
+                            Image(systemName: "pencil")
+                        }
+                    }
+                }
                 if showMotifInputField {
-                    VStack {
-                        Text("Enter a motif for the image")
+                    VStack(alignment: .leading) {
+                        Text("Enter a motif you'd like to generate").font(.caption)
                         TextInputField(placeholder: "e.g. Skull") { value in
                             motifInput = value
                             showMotifInputField = false
@@ -40,20 +51,11 @@ struct ImagePromptFormView: View {
                     }
                 }
 
-                if motifInput.count > 0 {
-                    Text(motifInput)
-                        .onLongPressGesture {
-                            showMotifInputField = true
-                            motifInput = ""
-                        }
-                        .font(.title)
-                }
+                PrompKeywordList(
+                    selectedId: $selectedKeywordId, prompts: $prompts)
 
-                if prompts.count > 0 {
-                    PrompKeywordList(
-                        selectedId: $selectedKeywordId, prompts: $prompts)
-                } else {
-                    Text("Enter elements to include in the image")
+                VStack(alignment: .leading) {
+                    Text("Add elements to include in the image").font(.caption)
                     TextInputField { value in
                         prompts.append(PromptKeyword(value: value))
                     }
