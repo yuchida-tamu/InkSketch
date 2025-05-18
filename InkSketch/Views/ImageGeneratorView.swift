@@ -61,7 +61,7 @@ struct ImageGeneratorView: View {
             }
             .interactiveDismissDisabled()
             .presentationDetents(
-                [.fraction(0.2), .medium], selection: $selectedDent
+                [.fraction(0.1), .fraction(0.2), .medium], selection: $selectedDent
             )
             .presentationDragIndicator(.visible)
         }

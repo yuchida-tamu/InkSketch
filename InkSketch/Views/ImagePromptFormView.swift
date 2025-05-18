@@ -14,19 +14,19 @@ enum FormSize {
 
 struct ImagePromptFormView: View {
     @Binding private var size: PresentationDetent
-    
+
     @State private var prompts: [PromptKeyword] = []
     @State private var selectedKeywordId: UUID? = nil
     @State private var motifInput = ""
     @State private var showMotifInputField = true
-    
+
     private var submit: (FormValue) -> Void
     private var fetching: Bool = false
-    
+
     private var disableSubmit: Bool {
         return motifInput == "" || fetching
     }
-    
+
     var body: some View {
         VStack(spacing: 8) {
             if size == .medium {
@@ -58,10 +58,10 @@ struct ImagePromptFormView: View {
                         prompts.append(PromptKeyword(value: value))
                     }
                 }
-                
+
                 Spacer()
-            } // Full Content
-            else {
+            }  // Full Content
+            else if size == .fraction(0.2) {
                 if motifInput.count > 0 {
                     Text(motifInput)
                         .padding(.vertical, 8)
@@ -78,7 +78,9 @@ struct ImagePromptFormView: View {
                 }
             }
 
-            if motifInput.count == 0 && size == .fraction(0.2) {
+            if size == .fraction(0.1)
+                || (motifInput.count == 0 && size == .fraction(0.2))
+            {
                 Button {
                     size = .medium
                 } label: {
@@ -86,10 +88,13 @@ struct ImagePromptFormView: View {
                         .bold()
                 }
                 .buttonStyle(.bordered)
-            }
-            else {
+            } else {
                 Button {
-                    submit(FormValue(motif: motifInput, keywords: prompts.map({$0.value}).joined(separator: ", ")))
+                    submit(
+                        FormValue(
+                            motif: motifInput,
+                            keywords: prompts.map({ $0.value }).joined(
+                                separator: ", ")))
                     size = .fraction(0.2)
                 } label: {
                     Text("GENERATE")
@@ -104,13 +109,16 @@ struct ImagePromptFormView: View {
         .padding(.vertical, 24)
         .background()
     }
-    
-    init(fetching: Bool = false, size: Binding<PresentationDetent>, submit: @escaping (FormValue) -> Void) {
+
+    init(
+        fetching: Bool = false, size: Binding<PresentationDetent>,
+        submit: @escaping (FormValue) -> Void
+    ) {
         self._size = size
         self.submit = submit
         self.fetching = fetching
     }
-    
+
     struct FormValue {
         var motif: String
         var keywords: String
@@ -121,7 +129,7 @@ struct ImagePromptFormView: View {
     struct PreviewContent: View {
         @State var size: PresentationDetent = .medium
         var body: some View {
-            ImagePromptFormView (size: $size){ data in
+            ImagePromptFormView(size: $size) { data in
                 print("motif: \(data.motif), keywords: \(data.keywords)")
             }
         }
