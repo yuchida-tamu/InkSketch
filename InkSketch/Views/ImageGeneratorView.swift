@@ -16,31 +16,25 @@ struct PromptKeyword: Identifiable {
 struct ImageGeneratorView: View {
     private var viewModel: ImageGeneratorViewModel
     @Environment(\.modelContext) private var context
+
     @State private var selectedDent: PresentationDetent = .fraction(0.1)
     @State private var navigationPath = NavigationPath()
+    @State private var isNewImage = true
 
     @Query var sketches: [Sketch]
-    
+
     var shouldShowSheet: Bool {
         navigationPath.count == 0
     }
 
     var disabledSave: Bool {
-        return viewModel.encodedImageData?.count ?? 0 == 0
-    }
-    
-    var galleryImages: [UIImage] {
-        sketches.map{ sketch in
-            if let data = Data(base64Encoded: sketch.data) {
-                return UIImage(data: data)
-            }
-            return nil
-        }.compactMap{$0}
+        return viewModel.encodedImageData?.count ?? 0 == 0 || !isNewImage
+            || viewModel.isProcessing
     }
 
     //MARK: BODY
     var body: some View {
-        NavigationStack (path: $navigationPath){
+        NavigationStack(path: $navigationPath) {
             VStack {
                 //MARK: HEADER CONTROL
                 HStack(spacing: 8) {
@@ -61,6 +55,7 @@ struct ImageGeneratorView: View {
                             data.count > 0
                         else { return }
                         context.insert(Sketch(data: data))
+                        isNewImage = false
                     } label: {
                         VStack {
                             Image(systemName: "arrow.down.doc.fill")
@@ -116,6 +111,8 @@ struct ImageGeneratorView: View {
                 ) { data in
                     viewModel.generateImage(
                         motif: data.motif, keywords: data.keywords)
+
+                    isNewImage = true
                 }
                 .interactiveDismissDisabled()
                 .presentationDetents(
@@ -125,21 +122,12 @@ struct ImageGeneratorView: View {
                 .presentationDragIndicator(.visible)
                 .presentationBackgroundInteraction(.enabled)
             }
+            //MARK: NAVIGATION
             .navigationDestination(
                 for: Int.self,
                 destination: { _ in
-                   //MARK: Gallery
-                    if galleryImages.count == 0 {
-                        Text("NO SAVED DATA")
-                    } else {
-                        List(galleryImages, id: \.self){ item in
-                            VStack {
-                                Image(uiImage: item).resizable()
-                            }
-                            .frame(width: 96, height: 96)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                    }
+                    SketchGalleryView()
+                        .navigationTitle("Sketch Gallery")
                 }
             )
             .onDisappear {
@@ -160,7 +148,7 @@ struct ImageGeneratorView: View {
 }
 
 #Preview {
-    var modelContainer: ModelContainer = {
+    let modelContainer: ModelContainer = {
         let schema = Schema([Sketch.self])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: true)

@@ -23,7 +23,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    var modelContainer: ModelContainer = {
+    let modelContainer: ModelContainer = {
         let schema = Schema([Sketch.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         do {
