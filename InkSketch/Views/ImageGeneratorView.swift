@@ -5,6 +5,7 @@
 //  Created by Yuta Uchida on 2025/05/10.
 //
 
+import SwiftData
 import SwiftUI
 
 struct PromptKeyword: Identifiable {
@@ -13,27 +14,54 @@ struct PromptKeyword: Identifiable {
 }
 
 struct ImageGeneratorView: View {
-    private var maxPromptCount = 5
-    private var minPromptCount = 1
-
-    @State private var keyword = ""
-    @State private var prompts: [PromptKeyword] = []
-    @State private var selectedKeywordId: UUID? = nil
-    @State private var selectedDent: PresentationDetent = .fraction(0.1)
-
     private var viewModel: ImageGeneratorViewModel
+    @Environment(\.modelContext) private var context
+    @State private var selectedDent: PresentationDetent = .fraction(0.1)
+    @Query var sketches: [Sketch]
 
-    var isSubmitButtonDisabled: Bool {
-        return viewModel.isProcessing || prompts.count < minPromptCount
+    var disabledSave: Bool {
+        return viewModel.encodedImageData?.count ?? 0 == 0
     }
 
-    // MARK: BODY
+    //MARK: BODY
     var body: some View {
-        // DISPLAY
         VStack {
+            //MARK: HEADER CONTROL
+            HStack(spacing: 8) {
+                Spacer()
+
+                VStack {
+                    Image(systemName: "square.grid.2x2.fill")
+                    Text("\(sketches.count)").font(.caption)
+                }
+
+                // Save
+                Button {
+                    guard let data = viewModel.encodedImageData, data.count > 0
+                    else { return }
+                    context.insert(Sketch(data: data))
+                } label: {
+                    VStack {
+                        Image(systemName: "arrow.down.doc.fill")
+                        Text("Save").font(.caption)
+                    }
+                }
+                .foregroundStyle(disabledSave ? .gray : .accent)
+                .disabled(disabledSave)
+                .padding()
+
+                // TODO: Export
+
+                // TODO: Print
+            }
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+
+            Spacer()
+
+            //MARK: DISPLAY
             GeometryReader { geometry in
                 ZStack {
-                    // Image Display
                     if let image = viewModel.uiImage {
                         VStack {
                             Image(uiImage: image)
@@ -43,23 +71,23 @@ struct ImageGeneratorView: View {
                     } else if !viewModel.isProcessing {
                         Text("NO IMAGE")
                     }
-                    
+
                     if viewModel.isProcessing {
                         ProgressView()
                     }
-
                 }
                 .frame(width: geometry.size.width, height: geometry.size.width)
                 .background(.gray)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .frame(width: .infinity, height: 512)
-
+            Spacer()
         }  // - VStack
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background()
         .sheet(isPresented: .constant(true)) {
+            // MARK: BOTTOM SHEET
             ImagePromptFormView(
                 fetching: viewModel.isProcessing,
                 size: $selectedDent
@@ -73,6 +101,7 @@ struct ImageGeneratorView: View {
                 selection: $selectedDent
             )
             .presentationDragIndicator(.visible)
+            .presentationBackgroundInteraction(.enabled)
         }
         .onDisappear {
             viewModel.initTask()
@@ -91,6 +120,19 @@ struct ImageGeneratorView: View {
 }
 
 #Preview {
-    ImageGeneratorView()
+    var modelContainer: ModelContainer = {
+        let schema = Schema([Sketch.self])
+        let modelConfiguration = ModelConfiguration(
+            schema: schema, isStoredInMemoryOnly: true)
+        do {
+            return try ModelContainer(
+                for: schema, configurations: [modelConfiguration])
+        } catch {
+            fatalError("Could not create ModelContainer: \(error)")
+        }
+    }()
+
+    return ImageGeneratorView()
         .environment(\.colorScheme, .dark)
+        .modelContainer(modelContainer)
 }

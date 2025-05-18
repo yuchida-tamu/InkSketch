@@ -14,6 +14,7 @@ import SwiftUI
     
     var isProcessing = false
     var uiImage: UIImage?
+    var encodedImageData: String?
 
     init(service: ImageGeneratable) {
         self.service = service
@@ -29,6 +30,8 @@ import SwiftUI
                 print("Failed to generate image")
                 return
             }
+            
+            encodedImageData = encodedImage
     
             // Convert base64 image string into Data
             guard let imageData = Data(base64Encoded: encodedImage) else {

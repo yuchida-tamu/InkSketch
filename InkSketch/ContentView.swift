@@ -23,6 +23,18 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    var modelContainer: ModelContainer = {
+        let schema = Schema([Sketch.self])
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        do {
+            return try ModelContainer(
+                for: schema, configurations: [modelConfiguration])
+        } catch {
+            fatalError("Could not create ModelContainer: \(error)")
+        }
+    }()
+    
+    return ContentView()
         .environment(\.colorScheme, .dark)
+        .modelContainer(modelContainer)
 }

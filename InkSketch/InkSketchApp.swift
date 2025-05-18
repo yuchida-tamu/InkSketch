@@ -11,7 +11,7 @@ import SwiftUI
 @main
 struct InkSketchApp: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([])
+        let schema = Schema([Sketch.self])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false)
 
