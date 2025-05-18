@@ -19,7 +19,7 @@ struct ImageGeneratorView: View {
     @State private var keyword = ""
     @State private var prompts: [PromptKeyword] = []
     @State private var selectedKeywordId: UUID? = nil
-    @State private var selectedDent: PresentationDetent = .medium
+    @State private var selectedDent: PresentationDetent = .fraction(0.1)
 
     private var viewModel: ImageGeneratorViewModel
 
@@ -30,25 +30,33 @@ struct ImageGeneratorView: View {
     // MARK: BODY
     var body: some View {
         // DISPLAY
-        ZStack {
-            VStack {
-                // Image Display
-                if let image = viewModel.uiImage {
-                    Image(uiImage: image)
-                        .resizable()
+        VStack {
+            GeometryReader { geometry in
+                ZStack {
+                    // Image Display
+                    if let image = viewModel.uiImage {
+                        VStack {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        }
+                    } else if !viewModel.isProcessing {
+                        Text("NO IMAGE")
+                    }
+                    
+                    if viewModel.isProcessing {
+                        ProgressView()
+                    }
+
                 }
-
-                Spacer()
-            }  // - VStack
-            .padding()
-            .onDisappear {
-                viewModel.initTask()
+                .frame(width: geometry.size.width, height: geometry.size.width)
+                .background(.gray)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
+            .frame(width: .infinity, height: 512)
 
-            if viewModel.isProcessing {
-                ProgressView()
-            }
-        }  // - ZStack
+        }  // - VStack
+        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background()
         .sheet(isPresented: .constant(true)) {
@@ -61,9 +69,13 @@ struct ImageGeneratorView: View {
             }
             .interactiveDismissDisabled()
             .presentationDetents(
-                [.fraction(0.1), .fraction(0.2), .medium], selection: $selectedDent
+                [.fraction(0.1), .fraction(0.2), .medium],
+                selection: $selectedDent
             )
             .presentationDragIndicator(.visible)
+        }
+        .onDisappear {
+            viewModel.initTask()
         }
     }
 
