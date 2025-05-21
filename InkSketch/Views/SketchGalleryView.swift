@@ -12,13 +12,15 @@ struct SketchGalleryView: View {
     @Query var sketches: [Sketch]
     @State private var gridColumns = Array(
         repeating: GridItem(.flexible()), count: 3)
+    @State private var isPresentedImageSheet = false
+    @State private var selectedImage: GalleryItem?
 
-    private var images: [UIImage] {
+    private var images: [GalleryItem] {
         sketches.compactMap { sketch in
             if let data = Data(base64Encoded: sketch.data),
                 let uiImage = UIImage(data: data)
             {
-                return uiImage
+                return GalleryItem(data: uiImage)
             }
             return nil
         }
@@ -28,14 +30,18 @@ struct SketchGalleryView: View {
         VStack {
             if sketches.count > 0 {
                 LazyVGrid(columns: gridColumns) {
-                    ForEach(images, id: \.self) { item in
+                    ForEach(images) { item in
                         VStack {
-                            Image(uiImage: item)
+                            Image(uiImage: item.data)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                         }
                         .frame(width: 96, height: 96)
                         .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .onTapGesture {
+                            selectedImage = item
+                            isPresentedImageSheet = true
+                        }
 
                     }
                 }
@@ -45,7 +51,21 @@ struct SketchGalleryView: View {
                 Text("NO DATA")
             }
         }
-
+        .sheet(item: $selectedImage, onDismiss: {
+            selectedImage = nil
+        }){ item in
+            VStack {
+                Image(uiImage: item.data)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            }
+            .padding(16)
+        }
+    }
+    
+    struct GalleryItem: Identifiable {
+        var id = UUID()
+        var data: UIImage
     }
 }
 
