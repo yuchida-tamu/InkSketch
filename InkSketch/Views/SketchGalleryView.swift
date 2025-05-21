@@ -9,38 +9,25 @@ import SwiftData
 import SwiftUI
 
 struct SketchGalleryView: View {
+    @Environment(\.modelContext) private var context
     @Query var sketches: [Sketch]
     @State private var gridColumns = Array(
         repeating: GridItem(.flexible()), count: 3)
-    @State private var isPresentedImageSheet = false
-    @State private var selectedImage: GalleryItem?
-
-    private var images: [GalleryItem] {
-        sketches.compactMap { sketch in
-            if let data = Data(base64Encoded: sketch.data),
-                let uiImage = UIImage(data: data)
-            {
-                return GalleryItem(data: uiImage)
-            }
-            return nil
-        }
-    }
+    @State private var selectedImage: Sketch?
 
     var body: some View {
         VStack {
             if sketches.count > 0 {
                 LazyVGrid(columns: gridColumns) {
-                    ForEach(images) { item in
-                        VStack {
-                            Image(uiImage: item.data)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
+                    ForEach(sketches) { item in
+                        GalleryItem(item: item){ image in
+                            removeImage(item: image)
                         }
-                        .frame(width: 96, height: 96)
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
                         .onTapGesture {
                             selectedImage = item
-                            isPresentedImageSheet = true
+                        }
+                        .onLongPressGesture{
+                            removeImage(item: item)
                         }
 
                     }
@@ -51,21 +38,68 @@ struct SketchGalleryView: View {
                 Text("NO DATA")
             }
         }
-        .sheet(item: $selectedImage, onDismiss: {
-            selectedImage = nil
-        }){ item in
+        .sheet(
+            item: $selectedImage,
+            onDismiss: {
+                selectedImage = nil
+            }
+        ) { item in
             VStack {
-                Image(uiImage: item.data)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+                if let data = Data(base64Encoded: item.data),
+                    let uiImage = UIImage(data: data)
+                {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                }
             }
             .padding(16)
         }
     }
+
+    private func removeImage(item: Sketch) {
+        context.delete(item)
+    }
     
-    struct GalleryItem: Identifiable {
-        var id = UUID()
-        var data: UIImage
+    struct GalleryItem: View {
+        var item: Sketch
+        var onRemove: (Sketch) -> Void
+        @State var showDeleteButton = false
+        
+        var body: some View {
+            ZStack(alignment: .topTrailing) {
+                VStack {
+                    if let data = Data(base64Encoded: item.data),
+                       let uiImage = UIImage(data: data)
+                    {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    }
+                    
+                }
+                .frame(width: 96, height: 96)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .onLongPressGesture{
+                    showDeleteButton.toggle()
+                }
+                if showDeleteButton {
+                    Button{
+                        onRemove(item)
+                        showDeleteButton = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                    }
+                    .padding(4)
+                    .foregroundStyle(.red)
+                }
+            }
+        }
+        
+        init(item: Sketch, onRemove: @escaping (Sketch) -> Void) {
+            self.item = item
+            self.onRemove = onRemove
+        }
     }
 }
 
